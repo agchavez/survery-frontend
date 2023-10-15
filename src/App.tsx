@@ -6,6 +6,7 @@ import { LoginPage } from './pages/auth';
 import { HomePage } from './pages/home';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import ConnetRoomPage from './pages/auth/ConnetRoomPage';
+import { Toaster } from 'sonner';
 
 
 function App() {
@@ -20,7 +21,6 @@ function App() {
     const html = document.querySelector('html');
 
     if (darkMode) {
-      console.log('darkMode', html);
       html?.classList.add('dark');
     } else {
       html?.classList.remove('dark');
@@ -31,6 +31,10 @@ function App() {
   return (
     // Formulario de Login de usuario con tailwindcss
     <>
+    <Toaster 
+      position='top-right'
+      richColors
+    />
     <div className='h-screen w-screen'>
 
  
@@ -60,7 +64,7 @@ function App() {
 
       </div>
 
-        <ConnetRoomPage />
+        <HomePage />
       </div>
     </>
   )

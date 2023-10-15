@@ -70,7 +70,7 @@ export const LoginPage = () => {
                         </div>
                         <div className="border-t-2 bg-gray-400 dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-80 mx-auto"></div>
 
-                        {!createRoom && <div className="transform -translate-y-2 transition-all duration-200">
+                        {createRoom && <div className="transform -translate-y-2 transition-all duration-200">
                             <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Codigo sala
                             </label>
