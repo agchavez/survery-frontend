@@ -5,7 +5,6 @@ import { Room, RoomQuestion } from '../../interfaces/question';
 import { toast } from 'sonner';
 import { CreateQuestionModal } from './components/CreateQuestionModal';
 
-const ENDPOINT = 'ws://127.0.0.1:8000/ws/room/test/';
 
 type MenssageType = 'chat_message' | 'question_created' | 'notify_sale' | 'room_data' | 'question_deleted';
 
@@ -21,15 +20,20 @@ export const HomePage = () => {
   const [roomData, setroomData] = useState<Room | null>(null);
   const [socket, setSocket] = useState<w3cwebsocket | null>(null);
   useEffect(() => {
+    const ENDPOINT = 'ws://127.0.0.1:8000/ws/room/test/?query_string=${userId}';
+
     // En los headers se envía el token de autenticación
-    const socket = new W3CWebSocket(ENDPOINT, undefined, undefined, { "authorization": "Token", "accept-charset": "utf-8" });
-    setSocket(socket);
+    const socket = new W3CWebSocket(ENDPOINT, undefined, undefined, {
+      "authorization": "Token TU_TOKEN_DE_AUTENTICACION", // Reemplaza 'TU_TOKEN_DE_AUTENTICACION' con el token real
+      "accept-charset": "utf-8",
+      "x-token":"TOOKEN AQUI "
+    });
+  setSocket(socket);
     socket.onopen = () => {
       console.log('WebSocket Client Connected');
     };
     socket.onmessage = (message: IMessageEvent) => {
       const dataFromServer: Message = JSON.parse(message.data.toString());
-      console.log(dataFromServer, 'dataFromServer');
 
       switch (dataFromServer.type) {
         case 'chat_message':
