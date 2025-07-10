@@ -1,113 +1,173 @@
 import React, { useState } from 'react'
-
-
-import { faPlus, faServer } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faEye, faEyeSlash, faKey, faPlus, faServer, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { InputLocal } from '../../components/InputLocal';
+import { ButtomLocal } from '../../components/ButtomLocal';
 import { Alert } from '../../components/Alert';
 
 
+type LoginForm = {
+    email: string,
+    password: string,
+    createRoom: boolean,
+    roomCode?: string
+}
+
 export const LoginPage = () => {
-    const [createRoom, setcreateRoom] = useState<boolean>(false)
+    const [createRoom, setCreateRoom] = useState<boolean>(false)
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [submitError, setSubmitError] = useState<string>('');
+
+    // Validation schema
+    const schema = yup.object().shape({
+        email: yup
+            .string()
+            .email("Ingrese un email válido")
+            .required("El email es requerido"),
+        password: yup
+            .string()
+            .required("La contraseña es requerida")
+            .min(6, "La contraseña debe tener al menos 6 caracteres"),
+        createRoom: yup.boolean(),
+        roomCode: yup.string().when('createRoom', {
+            is: true,
+            then: (schema) => schema.required("El código de sala es requerido"),
+            otherwise: (schema) => schema.notRequired()
+        })
+    });
+
+    const { register, handleSubmit, watch, formState: { errors, isSubmitting }, reset } = useForm<LoginForm>({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            email: '',
+            password: '',
+            createRoom: false,
+            roomCode: ''
+        }
+    });
+
+    const watchCreateRoom = watch("createRoom");
+
+    const onSubmit = async (data: LoginForm) => {
+        try {
+            setSubmitError('');
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log(data);
+            // Handle successful login here
+        } catch (error) {
+            setSubmitError('Error al ingresar a la sala. Verifique sus credenciales.');
+        }
+    }
+
+    const handleCreateRoomChange = (value: boolean) => {
+        setCreateRoom(value);
+    };
 
 
     return (
         <>
-            <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-800" style={{ height: 'calc(100vh - 2.5rem)' }}>
-
-                <div className="bg-white rounded-lg shadow-xl p-10  dark:bg-gray-800">
-                    <h2 className="text-3xl font-semibold mb-6 text-center text-gray-800 dark:text-white">
-                        Login
+            <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-900" style={{ height: 'calc(100vh - 2.5rem)' }}>
+                <div className="bg-white rounded-lg shadow-xl p-10 dark:bg-gray-800 transform transition-all duration-300 hover:shadow-2xl">
+                    <h2 className="text-4xl font-bold mb-6 text-center text-gray-800 dark:text-white">
+                        Iniciar Sesión
                     </h2>
                     <div className="w-80">
-                        <p className="mb-2 text-gray-900 font-light text-sm text-justify dark:text-gray-300">
+                        <p className="mb-6 text-gray-600 font-light text-sm text-center dark:text-gray-300">
                             Complete los campos para ingresar a la sala de votación o puede crear una nueva.
                         </p>
                     </div>
-                    <form className="space-y-3  w-80">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Email
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    autoComplete='off'
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md min-h-10 h-8 border-2"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Contraseña
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    type="password"
-                                    name="password"
-                                    id="password"
-                                    className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md min-h-10 h-8 border-2"
-                                />
-                            </div>
-                        </div>
+                    <form className="space-y-4 w-80" onSubmit={handleSubmit(onSubmit)}>
+                        <InputLocal
+                            label="Correo Electrónico"
+                            type="email"
+                            placeholder="ejemplo@correo.com"
+                            id='email'
+                            icon={faEnvelope}
+                            name="email"
+                            autoComplete='on'
+                            error={errors.email?.message}
+                            register={{
+                                ...register("email")
+                            }}
+                            className=''
+                            labelClassName=''
+                        />
+                        
+                        <InputLocal
+                            label="Contraseña"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Ingrese su contraseña"
+                            id='password'
+                            icon={faKey}
+                            name="password"
+                            autoComplete='on'
+                            error={errors.password?.message}
+                            register={{
+                                ...register("password")
+                            }}
+                            className=''
+                            labelClassName=''
+                            endIcon={showPassword ? faEyeSlash : faEye}
+                            onIconClick={() => setShowPassword(!showPassword)}
+                        />
 
-                        <div className="flex items-center mt-4">
-                            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
+                        <div className="flex items-center space-x-3 pt-2">
+                            <input
+                                type="checkbox"
+                                id="createRoom"
+                                {...register("createRoom")}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                onChange={(e) => handleCreateRoomChange(e.target.checked)}
+                            />
+                            <label htmlFor="createRoom" className="text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Crear nueva sala
                             </label>
-                            <div className="mt-1">
-                                <input
-                                    type="checkbox"
-                                    autoComplete='off'
-                                    name="createRoom"
-                                    id="createRoom"
-                                    className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md min-h-10 h-4 border-2 ml-2"
-                                    onChange={() => setcreateRoom(!createRoom)}
-                                />
-                            </div>
-
                         </div>
-                        <div className="border-t-2 bg-gray-400 dark:bg-gray-700 border-gray-300 dark:border-gray-600 w-80 mx-auto"></div>
 
-                        {createRoom && <div className="transform -translate-y-2 transition-all duration-200">
-                            <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Codigo sala
-                            </label>
-                            <div className="mt-1">
-                                <input
+                        {(watchCreateRoom || createRoom) && (
+                            <div className="transform transition-all duration-300 ease-in-out">
+                                <InputLocal
+                                    label="Código de Sala"
                                     type="text"
+                                    placeholder="Ingrese el código de la sala"
+                                    id='roomCode'
+                                    icon={faServer}
+                                    name="roomCode"
                                     autoComplete='off'
-                                    name="codigo"
-                                    id="codigo"
-                                    className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md min-h-10 h-8 border-2"
+                                    error={errors.roomCode?.message}
+                                    register={{
+                                        ...register("roomCode")
+                                    }}
+                                    className=''
+                                    labelClassName=''
                                 />
                             </div>
+                        )}
 
-                        </div>}
-                        <div>
+                        {submitError && (
+                            <div className="transform transition-all duration-300 ease-in-out">
+                                <Alert
+                                    message={submitError}
+                                    type='error'
+                                />
+                            </div>
+                        )}
 
-                            <Alert
-                                message='Error al ingresar a la sala'
-                                type='error'
-                            />
-                        </div>
-                        <div className="">
-                            {/* Divider */}
-                            <button
+                        <div className="pt-4">
+                            <ButtomLocal
                                 type="submit"
-                                className="w-full mt-5 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-800 hover:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:hover:bg-gray-600"
-                            >
-                                {
-                                    createRoom ? 'Crear' : 'Ingresar'}
-                                < FontAwesomeIcon icon={
-                                    createRoom ? faPlus : faServer
-                                } className="ml-2 pt-1" />
-                            </button>
+                                label={createRoom ? 'Crear Sala' : 'Ingresar'}
+                                loading={isSubmitting}
+                                disabled={isSubmitting}
+                                icon={createRoom ? faPlus : faSignInAlt}
+                                className="w-full"
+                            />
                         </div>
                     </form>
                 </div>
-
             </div>
         </>
     )
