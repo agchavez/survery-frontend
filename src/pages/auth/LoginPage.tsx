@@ -1,70 +1,26 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { faEnvelope, faEye, faEyeSlash, faKey, faPlus, faServer, faSignInAlt } from '@fortawesome/free-solid-svg-icons';
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { InputLocal } from '../../components/InputLocal';
 import { ButtomLocal } from '../../components/ButtomLocal';
 import { Alert } from '../../components/Alert';
-
-
-type LoginForm = {
-    email: string,
-    password: string,
-    createRoom: boolean,
-    roomCode?: string
-}
+import { useLoginForm, useLoginUI } from '../../hooks';
 
 export const LoginPage = () => {
-    const [createRoom, setCreateRoom] = useState<boolean>(false)
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [submitError, setSubmitError] = useState<string>('');
-
-    // Validation schema
-    const schema = yup.object().shape({
-        email: yup
-            .string()
-            .email("Ingrese un email válido")
-            .required("El email es requerido"),
-        password: yup
-            .string()
-            .required("La contraseña es requerida")
-            .min(6, "La contraseña debe tener al menos 6 caracteres"),
-        createRoom: yup.boolean(),
-        roomCode: yup.string().when('createRoom', {
-            is: true,
-            then: (schema) => schema.required("El código de sala es requerido"),
-            otherwise: (schema) => schema.notRequired()
-        })
-    });
-
-    const { register, handleSubmit, watch, formState: { errors, isSubmitting }, reset } = useForm<LoginForm>({
-        resolver: yupResolver(schema),
-        defaultValues: {
-            email: '',
-            password: '',
-            createRoom: false,
-            roomCode: ''
-        }
-    });
+    const { 
+        register, 
+        handleSubmit, 
+        watch, 
+        formState: { errors, isSubmitting }, 
+        onSubmit, 
+        submitError 
+    } = useLoginForm();
+    
+    const { 
+        showPassword, 
+        togglePasswordVisibility 
+    } = useLoginUI();
 
     const watchCreateRoom = watch("createRoom");
-
-    const onSubmit = async (data: LoginForm) => {
-        try {
-            setSubmitError('');
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log(data);
-            // Handle successful login here
-        } catch (error) {
-            setSubmitError('Error al ingresar a la sala. Verifique sus credenciales.');
-        }
-    }
-
-    const handleCreateRoomChange = (value: boolean) => {
-        setCreateRoom(value);
-    };
 
 
     return (
@@ -111,7 +67,7 @@ export const LoginPage = () => {
                             className=''
                             labelClassName=''
                             endIcon={showPassword ? faEyeSlash : faEye}
-                            onIconClick={() => setShowPassword(!showPassword)}
+                            onIconClick={togglePasswordVisibility}
                         />
 
                         <div className="flex items-center space-x-3 pt-2">
@@ -120,14 +76,13 @@ export const LoginPage = () => {
                                 id="createRoom"
                                 {...register("createRoom")}
                                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                onChange={(e) => handleCreateRoomChange(e.target.checked)}
                             />
                             <label htmlFor="createRoom" className="text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Crear nueva sala
                             </label>
                         </div>
 
-                        {(watchCreateRoom || createRoom) && (
+                        {watchCreateRoom && (
                             <div className="transform transition-all duration-300 ease-in-out">
                                 <InputLocal
                                     label="Código de Sala"
@@ -159,10 +114,10 @@ export const LoginPage = () => {
                         <div className="pt-4">
                             <ButtomLocal
                                 type="submit"
-                                label={createRoom ? 'Crear Sala' : 'Ingresar'}
+                                label={watchCreateRoom ? 'Crear Sala' : 'Ingresar'}
                                 loading={isSubmitting}
                                 disabled={isSubmitting}
-                                icon={createRoom ? faPlus : faSignInAlt}
+                                icon={watchCreateRoom ? faPlus : faSignInAlt}
                                 className="w-full"
                             />
                         </div>
